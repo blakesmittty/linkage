@@ -4,10 +4,10 @@ import {GoogleOAuthProvider, GoogleLogin} from '@react-oauth/google';
 function Login() {
     const [player, setPlayer] = useState(null);
 
-    const handleLoginSuccess = (Response) => {
-        const token = Response.credential;
+    const handleLoginSuccess = (response) => {
+        const token = response.credential;
 
-        fetch('api/auth/google', {
+        fetch('http://localhost:8080/api/auth/google', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json', 
@@ -28,7 +28,7 @@ function Login() {
                 {player ? (
                     <div>
                         <h2>
-                            Welcome {player.userID}!
+                            Welcome {player.email}!
                         </h2>
                     </div>
                 ) : (

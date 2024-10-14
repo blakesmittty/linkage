@@ -12,20 +12,23 @@ type TokenInfo struct {
 	Issuer        string `json:"iss"`
 	Subject       string `json:"sub"`
 	Audience      string `json:"aud"`
-	Expiry        int    `json:"exp"`
+	Expiry        string `json:"exp"`
 	Email         string `json:"email"`
-	EmailVerified bool   `json:"email_verified"`
+	EmailVerified string `json:"email_verified"`
 }
 
 func verifyGoogleToken(token string) (*TokenInfo, error) {
 	googleOAuthURL := fmt.Sprintf("https://oauth2.googleapis.com/tokeninfo?id_token=%s", token)
 	resp, err := http.Get(googleOAuthURL)
 	if err != nil {
-		log.Print(err)
+		log.Printf("Error making request to Google: %v", err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		log.Printf("Google token verification failed with status: %s, body: %s", resp.Status, body)
 		return nil, fmt.Errorf("failed to verify token: %s", resp.Status)
 	}
 
@@ -47,11 +50,16 @@ func googleAuthHandler(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Token string `json:"token"`
 	}
-	json.NewDecoder(r.Body).Decode(&req)
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
 
 	tokenInfo, err := verifyGoogleToken(req.Token)
 	if err != nil {
-		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		log.Printf("Token verification error: %v", err)
+		http.Error(w, `{"error": "Invalid token"}`, http.StatusUnauthorized)
 		return
 	}
 
