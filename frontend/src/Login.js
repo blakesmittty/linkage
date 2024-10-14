@@ -28,7 +28,7 @@ function Login() {
                 {player ? (
                     <div>
                         <h2>
-                            Welcome {player.name}!
+                            Welcome {player.userID}!
                         </h2>
                     </div>
                 ) : (

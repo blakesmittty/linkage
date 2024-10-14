@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/handlers"
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -46,8 +48,16 @@ func main() {
 
 	createTable(db)
 
-	http.HandleFunc("/api/auth/google", googleAuthHandler)
+	mux := http.NewServeMux()
+
+	corsHandler := handlers.CORS(
+		handlers.AllowedOrigins([]string{"http://localhost:3000"}),
+		handlers.AllowedMethods([]string{"GET", "POST"}),
+		handlers.AllowedHeaders([]string{"Content-Type"}),
+	)(mux)
+
+	mux.HandleFunc("/api/auth/google", googleAuthHandler)
 
 	fmt.Println("server is running on localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", corsHandler))
 }
