@@ -4,6 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/http"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 //user logs in using oauth, high score is retrieved and sent to the client
@@ -36,11 +39,15 @@ func createTable(db *sql.DB) {
 	}
 }
 
+// NEED to implement CORS as middleware for security
 func main() {
 	db := initDB()
 	defer db.Close()
 
 	createTable(db)
 
-	fmt.Printf("helloWorld!")
+	http.HandleFunc("/api/auth/google", googleAuthHandler)
+
+	fmt.Println("server is running on localhost:8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
