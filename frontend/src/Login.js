@@ -3,6 +3,7 @@ import {GoogleOAuthProvider, GoogleLogin} from '@react-oauth/google';
 
 function Login() {
     const [player, setPlayer] = useState(null);
+    const username = useState(null);
 
     const handleLoginSuccess = (response) => {
         const token = response.credential;
@@ -17,6 +18,7 @@ function Login() {
         .then(res => res.json())
         .then(data => {
             setPlayer(data);
+            localStorage.setItem("username", data.username)
         })
         .catch(error => console.error("Login failed: ", error))
     };
@@ -28,14 +30,18 @@ function Login() {
                 {player ? (
                     <div>
                         <h2>
-                            Welcome {player.email}!
+                            Welcome {player.username}!
                         </h2>
                     </div>
                 ) : (
-                    <GoogleLogin 
+                    <div>
+                        <h3>Login with Google to play Versus and track high score!</h3>
+                       <GoogleLogin 
                     onSuccess={handleLoginSuccess} 
                     onError={() => console.log("login failed :(")}
-                    />
+                    /> 
+                    </div>
+                    
                 )}
             </div>
         </GoogleOAuthProvider>
