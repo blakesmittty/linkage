@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+// may use localstorage for high scores and information so
+
 type TokenInfo struct {
 	Issuer        string `json:"iss"`
 	Subject       string `json:"sub"`
