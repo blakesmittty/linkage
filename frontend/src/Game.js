@@ -2,13 +2,17 @@ import React, { useEffect } from "react";
 import * as PIXI from "pixi.js";
 import { useState, useRef } from "react";
 
+
 function Game() {
     const canvasRef = useRef(null);
     const appRef = useRef(null);
     const blockToDropRef = useRef(null);
+    const blocksRef = useRef(null);
+    const [loaded, setLoaded] = useState(false);
+    const socket = new WebSocket('');
     
     useEffect(() => {
-        const initPixi = async() => {
+        const initPixi = async () => {
             if (!canvasRef.current) return;
 
             const app = new PIXI.Application();
@@ -35,21 +39,108 @@ function Game() {
             const assets = await PIXI.Assets.loadBundle('blocks');
             console.log('assets loaded');
 
-            const oneBlock = new PIXI.Sprite(assets['1'].textures['default']);
-            oneBlock.width = 100;
-            oneBlock.height = 100;
+            const block1= new PIXI.Sprite(assets['1'].textures['default']);
+            const block2 = new PIXI.Sprite(assets['2'].textures['default']);
+            const block3 = new PIXI.Sprite(assets['3'].textures['default']);
+            const block4 = new PIXI.Sprite(assets['4'].textures['default']);
+            const block5 = new PIXI.Sprite(assets['5'].textures['default']);
+            const block6 = new PIXI.Sprite(assets['6'].textures['default']);
+            const block7 = new PIXI.Sprite(assets['7'].textures['default']);
+            const blockBarrier = new PIXI.Sprite(assets['barrier'].textures['default']);
+            const blockBarrierBroken = new PIXI.Sprite(assets['barrier'].textures['frame1']);
+
+            block1.width = 100;
+            block1.height = 100;
             blockToDropRef.current = oneBlock;
-            
 
-
-            const oneBlockBreak = new PIXI.AnimatedSprite([
+            const block1Break= new PIXI.AnimatedSprite([
                 assets['1'].textures['frame1'],
                 assets['1'].textures['frame2'],
                 assets['1'].textures['frame3'],
                 assets['1'].textures['frame4']
             ]);
 
-            app.stage.addChild(oneBlock);
+            const block2Break = new PIXI.AnimatedSprite([
+                assets['2'].textures['frame1'],
+                assets['2'].textures['frame2'],
+                assets['2'].textures['frame3'],
+                assets['2'].textures['frame4']
+            ]);
+
+            const block3Break = new PIXI.AnimatedSprite([
+                assets['3'].textures['frame1'],
+                assets['3'].textures['frame2'],
+                assets['3'].textures['frame3'],
+                assets['3'].textures['frame4']
+            ]);
+
+            const block4Break = new PIXI.AnimatedSprite([
+                assets['4'].textures['frame1'],
+                assets['4'].textures['frame2'],
+                assets['4'].textures['frame3'],
+                assets['4'].textures['frame4']
+            ]);
+
+            const block5Break = new PIXI.AnimatedSprite([
+                assets['5'].textures['frame1'],
+                assets['5'].textures['frame2'],
+                assets['5'].textures['frame3'],
+                assets['5'].textures['frame4']
+            ]);
+
+            const block6Break = new PIXI.AnimatedSprite([
+                assets['6'].textures['frame1'],
+                assets['6'].textures['frame2'],
+                assets['6'].textures['frame3'],
+                assets['6'].textures['frame4']
+            ]);
+
+            const block7Break = new PIXI.AnimatedSprite([
+                assets['7'].textures['frame1'],
+                assets['7'].textures['frame2'],
+                assets['7'].textures['frame3'],
+                assets['7'].textures['frame4']
+            ]);
+
+            const blocks = {
+                1: {
+                    'default': block1,
+                    'break': block1Break
+                },
+                2: {
+                    'default': block2,
+                    'break': block2Break
+                },
+                3: {
+                    'default': block3,
+                    'break': block3Break
+                },
+                4: {
+                    'default': block4,
+                    'break': block4Break
+                },
+                5: {
+                    'default': block5,
+                    'break': block5Break
+                },
+                6: {
+                    'default': block6,
+                    'break': block6Break
+                },
+                7: {
+                    'default': block7,
+                    'break': block7Break
+                },
+                'barrier': {
+                    'default': blockBarrier,
+                    'broken': blockBarrierBroken
+                }   
+            };
+            blocksRef.current = blocks;
+
+
+
+            app.stage.addChild(block1);
 
             // oneBlockBreak.width = 100;
             // oneBlockBreak.height = 100;
@@ -61,7 +152,7 @@ function Game() {
             // app.stage.addChild(oneBlockBreak);
 
             
-        
+            setLoaded(true);
         };
         initPixi();
 
@@ -76,9 +167,19 @@ function Game() {
     }, []);
 
     useEffect(() => {
+
+        const getRandomBlock = () => {
+            
+        };
+
+    }, []);
+
+    useEffect(() => {
         const handleKeyDown = (e) => {
             switch (e.key) {
+                case 'a':
                 case 'ArrowLeft': blockToDropRef.current.x -= 100; break;
+                case 'd':
                 case 'ArrowRight': blockToDropRef.current.x += 100; break;
                 default: break;
             }
