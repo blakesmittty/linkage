@@ -27,7 +27,7 @@ type GameRoom struct {
 
 //rooms := make(GameRoom, 0)
 
-const GridHeight = 7
+const GridHeight = 8
 const GridWidth = 7
 
 var grid [GridHeight][GridWidth]int
