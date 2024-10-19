@@ -76,6 +76,7 @@ func googleAuthHandler(w http.ResponseWriter, r *http.Request) {
 
 	// capture the index of @ to give player a username
 	atIndex := strings.Index(tokenInfo.Email, "@")
+	user := tokenInfo.Email[0:atIndex]
 
 	// set cookies to persist user session so they dont need to login every refresh
 	/*
@@ -92,7 +93,7 @@ func googleAuthHandler(w http.ResponseWriter, r *http.Request) {
 	// create a response to be sent to the client with their info
 	response := map[string]string{
 		"userID":   tokenInfo.Subject,
-		"username": tokenInfo.Email[0:atIndex],
+		"username": user,
 		"email":    tokenInfo.Email,
 		"message":  "User authenticated successfully",
 	}

@@ -18,6 +18,7 @@ function Login() {
         .then(res => res.json())
         .then(data => {
             setPlayer(data);
+            //store players username in localstorage for later use
             localStorage.setItem("username", data.username)
         })
         .catch(error => console.error("Login failed: ", error))

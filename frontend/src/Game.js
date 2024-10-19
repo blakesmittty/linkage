@@ -9,8 +9,39 @@ function Game() {
     const blockToDropRef = useRef(null);
     const blocksRef = useRef(null);
     const [loaded, setLoaded] = useState(false);
-    const socket = new WebSocket('');
+    const [socket, setSocket] = useState(null);
     
+    useEffect(() => {
+        const username = localStorage.getItem('username');
+        const ws = new WebSocket(`ws://localhost:8080/ws?username=${username}`);
+
+        ws.onopen = () => {
+            console.log("connection to server established");
+        };
+
+        ws.onerror = (error) => {
+            console.log("error in websocket: ",error);
+        };
+
+        ws.onclose = () => {
+            console.log("closing websocket connection");
+        };
+
+        ws.onmessage = (message) => {
+            console.log("received game state");
+
+        };
+
+        setSocket(ws);
+
+        return () => {
+            if (ws.readyState === WebSocket.OPEN || 1) {
+              ws.close();
+            }
+          };
+
+    }, []);
+
     useEffect(() => {
         const initPixi = async () => {
             if (!canvasRef.current) return;
@@ -51,7 +82,7 @@ function Game() {
 
             block1.width = 100;
             block1.height = 100;
-            blockToDropRef.current = oneBlock;
+            blockToDropRef.current = block1;
 
             const block1Break= new PIXI.AnimatedSprite([
                 assets['1'].textures['frame1'],
@@ -140,6 +171,7 @@ function Game() {
 
 
 
+
             app.stage.addChild(block1);
 
             // oneBlockBreak.width = 100;
@@ -175,12 +207,22 @@ function Game() {
     }, []);
 
     useEffect(() => {
+        const sendPlayerInput = () => {
+
+        };
+
         const handleKeyDown = (e) => {
+            const block = blockToDropRef.current;
+            const maxX = 700 - block.width;
+            const step = 100;
+            const minX = 0;
             switch (e.key) {
                 case 'a':
-                case 'ArrowLeft': blockToDropRef.current.x -= 100; break;
+                case 'ArrowLeft': block.x = Math.max(block.x - step, minX); break;
                 case 'd':
-                case 'ArrowRight': blockToDropRef.current.x += 100; break;
+                case 'ArrowRight': block.x = Math.min(block.x + step, maxX); break;
+                case 's': 
+                case 'ArrowDown':
                 default: break;
             }
         }

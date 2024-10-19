@@ -89,6 +89,8 @@ func main() {
 		handlers.AllowCredentials(),
 	)(mux)
 
+	//mux.HandleFunc("/ws", websocketHandler)
+
 	mux.HandleFunc("/api/auth/google", googleAuthHandler)
 
 	fmt.Println("server is running on localhost:8080")
