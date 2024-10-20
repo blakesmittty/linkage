@@ -12,12 +12,12 @@ function Game() {
     const [loaded, setLoaded] = useState(false);
     const [socket, setSocket] = useState(null);
     const socketRef = useRef(null);
-    const oneRef = useRef(null);
-    const twoRef = useRef(null);
-    const threeRef = useRef(null);
-    const fourRef = useRef()
     const occupiedPositionsRef = useRef(new Set()); 
     const spritesRef = useRef(new Set());
+    const loseRef = useRef(null);
+    const [gameLost, setGameLost] = useState(false);
+    const scoreRef = useRef(0);
+    const [score, setScore] = useState(0);
     
     useEffect(() => {
         const username = localStorage.getItem('username');
@@ -39,6 +39,11 @@ function Game() {
             console.log("received game state: ", message.data);
             const data = JSON.parse(message.data);
             
+            if (data.Lose) {
+                setGameLost(true);
+                return;
+            }
+            setScore(data.Score);
             clearGrid();
             updateGrid(data.Grid);
         };
@@ -71,6 +76,9 @@ function Game() {
                 console.log("PIXI application is not yet initialized");
                 return;
             }
+
+            //loseRef.current = grid.Lose;
+            console.log("loseref", loseRef.current)
     
             const blocks = blocksRef.current;
     
@@ -124,6 +132,16 @@ function Game() {
     }, []);
 
     useEffect(() => {
+
+        if (gameLost) {
+            // When the game is lost, destroy PIXI and clean up
+            if (appRef.current) {
+                console.log("Game lost: destroying PIXI app");
+                appRef.current.destroy(true, { children: true, texture: true, baseTexture: true });
+                appRef.current = null;
+            }
+            return; // Stop any further PIXI setup when game is lost
+        }
 
         const initPixi = async () => {
             if (!canvasRef.current) return;
@@ -289,7 +307,7 @@ function Game() {
                 appRef.current = null;
             }
         }
-    }, []);
+    }, [gameLost]);
 
 
     function generateRandomRoomID(length = 8) {
@@ -368,9 +386,33 @@ function Game() {
         }
     }, []);
 
-    return (
-        <div ref={canvasRef} />
+    const renderLossScreen = () => (
+        <div className="loss-screen">
+            <h1>Game Over</h1>
+            <p>You have lost. Better luck next time!</p>
+            <button onClick={() => window.location.reload()}>Restart</button>
+        </div>
     );
+
+    const renderScore = () => (
+        <div className="score">
+            <h2>Score: {score}</h2>
+        </div>
+    );
+
+    return (
+        <div>
+            {gameLost == true ? renderLossScreen() :
+            <div className="game">
+            {renderScore()}
+            <div ref={canvasRef} />
+            </div>
+            }
+        </div>
+    );
+
+
+
     
 };
 
