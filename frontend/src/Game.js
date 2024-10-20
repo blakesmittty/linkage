@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import * as PIXI from "pixi.js";
 import { useState, useRef } from "react";
+import "./Game.css";
 
 
 function Game() {
@@ -150,7 +151,7 @@ function Game() {
             await app.init({
                 width: 700,
                 height: 800,
-                backgroundColor: 'black'
+                backgroundColor: '262626'
             });
             canvasRef.current.appendChild(app.canvas);
             appRef.current = app;
@@ -403,9 +404,9 @@ function Game() {
     return (
         <div>
             {gameLost == true ? renderLossScreen() :
-            <div className="game">
+            <div>
             {renderScore()}
-            <div ref={canvasRef} />
+            <div className="game" ref={canvasRef} />
             </div>
             }
         </div>

@@ -20,8 +20,6 @@ type TokenInfo struct {
 	EmailVerified string `json:"email_verified"`
 }
 
-// NEED TO PERSIST A SESSION VIA SESSION COOKIE
-
 func verifyGoogleToken(token string) (*TokenInfo, error) {
 	// make url to authorize token with google
 	googleOAuthURL := fmt.Sprintf("https://oauth2.googleapis.com/tokeninfo?id_token=%s", token)

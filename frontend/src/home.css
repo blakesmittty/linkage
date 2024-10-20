@@ -1,3 +1,32 @@
 body {
-    background-color: goldenrod;
+    background-color: rgb(255, 228, 196);
+}
+
+.home {
+    text-align: center;
+    display: flexbox;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+    background-color: rgb(255, 195, 121);
+    margin-top: 10%;
+    padding: 20px;
+    border-radius: 16px;
+    border-radius: 20px;
+}
+
+.login {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+button {
+    width: 100%;
+    margin-top: 10px;
+    background-color: rgb(255, 228, 196);
+    border: 2px solid black;
+    border-radius: 20px;
+    font-size: x-large;
+    padding: 10px;
 }

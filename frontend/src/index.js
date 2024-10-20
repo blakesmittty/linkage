@@ -6,10 +6,16 @@ import Login from './Login';
 import Home from './Home';
 import Game from './Game';
 import reportWebVitals from './reportWebVitals';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-    <Game />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/game" element={<Game />} />
+      </Routes>
+    </BrowserRouter>
 );
 
 // If you want to start measuring performance in your app, pass a function
