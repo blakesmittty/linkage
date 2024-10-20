@@ -8,12 +8,20 @@ function Game() {
     const appRef = useRef(null);
     const blockToDropRef = useRef(null);
     const blocksRef = useRef(null);
+    const blockToDropNumRef = useRef(null);
     const [loaded, setLoaded] = useState(false);
     const [socket, setSocket] = useState(null);
+    const socketRef = useRef(null);
+    const oneRef = useRef(null);
+    const twoRef = useRef(null);
+    const threeRef = useRef(null);
+    const fourRef = useRef()
+    const occupiedPositionsRef = useRef(new Set()); 
+    const spritesRef = useRef(new Set());
     
     useEffect(() => {
         const username = localStorage.getItem('username');
-        const ws = new WebSocket(`ws://localhost:8080/ws?username=${username}`);
+        const ws = new WebSocket(`ws://localhost:8080/ws?username=${username}&roomID=${generateRandomRoomID()}`);
 
         ws.onopen = () => {
             console.log("connection to server established");
@@ -28,14 +36,87 @@ function Game() {
         };
 
         ws.onmessage = (message) => {
-            console.log("received game state");
-
+            console.log("received game state: ", message.data);
+            const data = JSON.parse(message.data);
+            
+            clearGrid();
+            updateGrid(data.Grid);
         };
 
         setSocket(ws);
+        socketRef.current = ws;
+
+        const clearGrid = () => {
+            for (const sprite of spritesRef.current) {
+                appRef.current.stage.removeChild(sprite);
+            }
+            spritesRef.current.clear();
+        };
+
+        const occupySet = (grid) => {
+            grid.forEach((row, rowIndex) => {
+                row.forEach((cell, colIndex) => {
+                    if (cell.Number != 0) {
+                        const position = `${rowIndex},${colIndex}`;
+                        occupiedPositionsRef.current.add(position);
+                    }
+                });
+            });
+        };
+
+        const updateGrid = (grid) => {
+            const app = appRef.current;
+    
+            if (!app || !app.stage) {
+                console.log("PIXI application is not yet initialized");
+                return;
+            }
+    
+            const blocks = blocksRef.current;
+    
+            grid.forEach((row, rowIndex) => {
+                row.forEach((cell, colIndex) => {
+                    if (cell.Number == -2 ) {
+                        const blockAsset = blocks[8]['default'];
+                        const position = `${rowIndex},${colIndex}`;
+                        const block = new PIXI.Sprite(blockAsset);
+                        spritesRef.current.add(block);
+                        block.x = colIndex * 100;
+                        block.y = rowIndex * 100;
+                        block.width = 100;
+                        block.height = 100;
+                        app.stage.addChild(block);
+                    } else if (cell.Number == -1) {
+                        const blockAsset = blocks[8]['broken'];
+                        const position = `${rowIndex},${colIndex}`;
+                        const block = new PIXI.Sprite(blockAsset);
+                        spritesRef.current.add(block);
+                        block.x = colIndex * 100;
+                        block.y = rowIndex * 100;
+                        block.width = 100;
+                        block.height = 100;
+                        app.stage.addChild(block);
+
+                    }
+                    if (cell.Number > 0) {
+                        const blockAsset = blocks[cell.Number]['default'];
+                        const position = `${rowIndex},${colIndex}`;
+                        if (!occupiedPositionsRef.current.has(position)) {
+                            const block = new PIXI.Sprite(blockAsset);
+                            spritesRef.current.add(block);
+                            block.x = colIndex * 100;
+                            block.y = rowIndex * 100;
+                            block.width = 100;
+                            block.height = 100;
+                            app.stage.addChild(block);
+                        }
+                    }
+                });
+            });
+        };
 
         return () => {
-            if (ws.readyState === WebSocket.OPEN || 1) {
+            if (ws.readyState === WebSocket.OPEN) {
               ws.close();
             }
           };
@@ -43,6 +124,7 @@ function Game() {
     }, []);
 
     useEffect(() => {
+
         const initPixi = async () => {
             if (!canvasRef.current) return;
 
@@ -70,19 +152,19 @@ function Game() {
             const assets = await PIXI.Assets.loadBundle('blocks');
             console.log('assets loaded');
 
-            const block1= new PIXI.Sprite(assets['1'].textures['default']);
-            const block2 = new PIXI.Sprite(assets['2'].textures['default']);
-            const block3 = new PIXI.Sprite(assets['3'].textures['default']);
-            const block4 = new PIXI.Sprite(assets['4'].textures['default']);
-            const block5 = new PIXI.Sprite(assets['5'].textures['default']);
-            const block6 = new PIXI.Sprite(assets['6'].textures['default']);
-            const block7 = new PIXI.Sprite(assets['7'].textures['default']);
-            const blockBarrier = new PIXI.Sprite(assets['barrier'].textures['default']);
-            const blockBarrierBroken = new PIXI.Sprite(assets['barrier'].textures['frame1']);
+            const block1= assets['1'].textures['default'];
+            const block2 = assets['2'].textures['default'];
+            const block3 = assets['3'].textures['default'];
+            const block4 = assets['4'].textures['default'];
+            const block5 = assets['5'].textures['default'];
+            const block6 = assets['6'].textures['default'];
+            const block7 = assets['7'].textures['default'];
+            const blockBarrier = assets['barrier'].textures['default'];
+            const blockBarrierBroken = assets['barrier'].textures['frame1'];
 
-            block1.width = 100;
-            block1.height = 100;
-            blockToDropRef.current = block1;
+            // block1.width = 100;
+            // block1.height = 100;
+            // blockToDropRef.current = block1;
 
             const block1Break= new PIXI.AnimatedSprite([
                 assets['1'].textures['frame1'],
@@ -162,17 +244,28 @@ function Game() {
                     'default': block7,
                     'break': block7Break
                 },
-                'barrier': {
+                8: {
                     'default': blockBarrier,
                     'broken': blockBarrierBroken
                 }   
             };
             blocksRef.current = blocks;
 
+            let blockNum = getRandomInt(1, 7);
+            let randBlockAsset = blocks[blockNum]['default'];
+            const randBlock = new PIXI.Sprite(randBlockAsset);
+            //spritesRef.current.add(randBlock);
+            console.log(randBlock);
+            blockToDropNumRef.current = blockNum;
+            blockToDropRef.current = randBlock;
 
+            
+            randBlock.x = 300;
+            randBlock.y = 0;
+            randBlock.width = 100;
+            randBlock.height = 100;
 
-
-            app.stage.addChild(block1);
+            app.stage.addChild(randBlock);
 
             // oneBlockBreak.width = 100;
             // oneBlockBreak.height = 100;
@@ -198,17 +291,53 @@ function Game() {
         }
     }, []);
 
-    useEffect(() => {
 
-        const getRandomBlock = () => {
-            
-        };
-
-    }, []);
+    function generateRandomRoomID(length = 8) {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let roomID = '';
+        for (let i = 0; i < length; i++) {
+            const randomIndex = Math.floor(Math.random() * characters.length);
+            roomID += characters[randomIndex];
+        }
+        return roomID;
+    };
+   
+    function getRandomInt(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
 
     useEffect(() => {
         const sendPlayerInput = () => {
+            const block = blockToDropRef.current;
+            const column = Math.floor(block.x / 100);
+            
+            const socket = socketRef.current;
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                const message = JSON.stringify({
+                    action: "drop",
+                    block: blockToDropNumRef.current,
+                    column: column
+                });
+                socket.send(message);
+            } else {
+                console.log("socket not ready");
+            }
+            appRef.current.stage.removeChild(blockToDropRef.current);
 
+            let blockNum = getRandomInt(1, 7);
+            let randBlockAsset = blocksRef.current[blockNum]['default'];
+            const randBlock = new PIXI.Sprite(randBlockAsset);
+           // spritesRef.current.add(randBlock);
+
+            randBlock.x = 300;
+            randBlock.y = 0;
+            randBlock.width = 100;
+            randBlock.height = 100
+            appRef.current.stage.addChild(randBlock);
+            blockToDropRef.current = randBlock;
+            blockToDropNumRef.current = blockNum;
         };
 
         const handleKeyDown = (e) => {
@@ -216,14 +345,19 @@ function Game() {
             const maxX = 700 - block.width;
             const step = 100;
             const minX = 0;
-            switch (e.key) {
-                case 'a':
-                case 'ArrowLeft': block.x = Math.max(block.x - step, minX); break;
-                case 'd':
-                case 'ArrowRight': block.x = Math.min(block.x + step, maxX); break;
-                case 's': 
-                case 'ArrowDown':
-                default: break;
+            const socket = socketRef.current;
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                switch (e.key) {
+                    case 'a':
+                    case 'ArrowLeft': block.x = Math.max(block.x - step, minX); break;
+                    case 'd':
+                    case 'ArrowRight': block.x = Math.min(block.x + step, maxX); break;
+                    case 's': 
+                    case 'ArrowDown': sendPlayerInput(); break;
+                    default: break;
+                }
+            } else {
+                console.log("socket not ready");
             }
         }
 

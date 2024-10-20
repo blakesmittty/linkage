@@ -89,7 +89,7 @@ func main() {
 		handlers.AllowCredentials(),
 	)(mux)
 
-	//mux.HandleFunc("/ws", websocketHandler)
+	mux.HandleFunc("/ws", websocketHandler)
 
 	mux.HandleFunc("/api/auth/google", googleAuthHandler)
 
